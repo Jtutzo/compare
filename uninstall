@@ -1,0 +1,67 @@
+#!/usr/bin/env bash
+
+#=================
+# Name : uninstall
+# Author : Jtutzo
+# Since : 1.0.0
+# Status : stable
+#=================
+
+set -o nounset
+set -o errexit
+
+# On vérifie que l'utilisateur est root
+if [[ "$EUID" -ne 0 ]];
+then
+    echo "User must be root."
+    exit 1
+fi
+
+echo "Désinstallation..."
+
+# On récupère les constantes du fichier script.const
+path_bin=`grep -e "^path_bin" script.const | sed -r "s/path_bin=//"`
+path_data=`grep -e "^path_data" script.const | sed -r "s/path_data=//"`
+path_lib=`grep -e "^path_lib" script.const | sed -r "s/path_lib=//"`
+name=`grep -e "^name" script.const | sed -r "s/name=//"`
+
+# On supprime les fichiers bin du dossier "path_bin"
+bin_files=(`ls -F ./bin/`)
+for bin_file in ${bin_files[@]}
+do
+    if [[ ! -z ${bin_file} ]];
+    then
+        rm -rvf ${path_bin}/${bin_file}
+    fi
+done
+
+# On supprime les fichiers data du dossier "path_data"
+data_files=(`ls -F ./data/`)
+for data_file in ${data_files[@]}
+do
+    if [[ ! -z ${data_file} ]];
+    then
+        rm -rvf ${path_data}/${data_file}
+    fi
+done
+
+# On supprime les fichiers lib du dossier "path_lib"
+lib_files=(`ls -F ./lib/`)
+for lib_file in ${lib_files[@]}
+do
+    if [[ ! -z ${lib_file} ]];
+    then
+        rm -rvf ${path_lib}/${lib_file}
+    fi
+done
+
+# Supprime le fichier de configuration si l'option "--purge" est précisé
+if echo ${@:-} | grep "\-\-purge" >> /dev/null
+then
+    user=`who | awk -F "[[:blank:]]" '{print $1}'`
+    echo "Désinstallation de /home/${user}/.${name}rc (si le fichier existe)"
+    rm -rfv /home/${user}/.${name}rc
+fi
+
+echo "Désinstallation avec succès."
+exit 0

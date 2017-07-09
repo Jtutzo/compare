@@ -1,0 +1,66 @@
+#!/usr/bin/env bash
+
+#=================
+# Name : build
+# Author : Jtutzo
+# Since : 1.0.0
+# Status : stable
+#=================
+
+set -o nounset
+set -o errexit
+
+echo "Build..."
+
+# On récupère le premier paramêtre si il existe (chemin du projet)
+if [[ -z ${1:-} ]];
+then
+    path_project=./
+else
+    path_project=${1}
+fi
+
+# On récupère les fichiers du dossier bin
+bin_files=(`ls -F ${path_project}/bin/`)
+
+# On récupère les fichiers du dossier lib
+lib_files=(`ls -F ${path_project}/lib/`)
+
+# On récupère les constantes du fichier script.const
+variables=(`egrep -v "^[[:blank:]]*#" ${path_project}/script.const`)
+
+# Pour chaque constante, on modifie sa valeur (si la constante est présente) dans :
+#   - dans tous les fichier du dossier bin
+#   - dans tous les fichier du dossier lib
+for variable in ${variables[@]}
+do
+    echo "Update : ${variable}"
+    
+    # On sépare le nom de la variable de sa valeur
+    name_variable=`echo ${variable} | awk -F "=" '{print $1}'`
+    value_variable=`echo ${variable} | sed -r 's/^[a-zA-Z0-9_]*=//'`
+
+    # On liste les fichiers du dossier bin
+    for bin_file in ${bin_files[@]}
+    do
+        # On remplace la valeur si la constante est présente dans le fichier
+        sed -i "s|\(^${name_variable}=\)\(.*$\)|\1${value_variable}|g" ${path_project}/bin/${bin_file}
+
+        # On rend le fichier executable
+        chmod +x ${path_project}/bin/${bin_file}
+    done
+
+    # On liste les fichiers du dossier lib
+    for lib_file in ${lib_files[@]}
+    do
+        # On remplace la valeur si la constante est présente dans le fichier
+        sed -i "s|\(^${name_variable}=\)\(.*$\)|\1${value_variable}|g" ${path_project}/lib/${lib_file}
+
+        # On rend le fichier executable
+        chmod +x ${path_project}/lib/${lib_file}
+    done
+
+done
+
+echo "Build avec succès."
+exit 0

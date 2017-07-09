@@ -1,0 +1,66 @@
+#!/usr/bin/env bash
+
+#=================
+# Name : install
+# Author : Jtutzo
+# Since : 1.0.0
+# Status : stable
+#=================
+
+set -o nounset
+set -o errexit
+
+# On vérifie que l'utilisateur est root
+if [[ "$EUID" -ne 0 ]];
+then
+    echo "User must be root."
+    exit 1
+fi
+
+echo "Installation..."
+
+# On récupère les constantes du fichier script.const
+path_bin=`grep -e "^path_bin" script.const | sed -r "s/path_bin=//"`
+path_data=`grep -e "^path_data" script.const | sed -r "s/path_data=//"`
+path_lib=`grep -e "^path_lib" script.const | sed -r "s/path_lib=//"`
+name=`grep -e "^name" script.const | sed -r "s/name=//"`
+
+# On build le projet
+./build
+
+# On crée les dossiers bin et data (si ils n'existent pas)
+mkdir -p ${path_bin}
+mkdir -p ${path_data}
+mkdir -p ${path_lib}
+
+# On installe les fichiers bin et data (par défault en mode production)
+# On peut installer en mode développement avec l'option "--dev"
+if echo ${@} | grep "\-\-dev" >> /dev/null
+then
+    echo "installation en mode dévellopement"
+    ln -sv `pwd`/bin/* ${path_bin}/ || true
+    ln -sv `pwd`/data/* ${path_data}/ || true
+    ln -sv `pwd`/lib/* ${path_lib}/ || true
+
+else
+    echo "installation en mode production"
+    cp -rv ./bin/*  ${path_bin}/ || true
+    cp -rv ./data/* ${path_data}/ || true
+    cp -rv ./lib/* ${path_lib}/ || true
+fi
+
+# On installe le fichier de configuration (si il n'est pas vide)
+# On peut sauter cette étape avec l'option "--without-rc"
+if ! echo ${@} | grep "\-\-without-rc" >> /dev/null
+then
+    user=`who | awk -F "[[:blank:]]" '{print $1}'`
+    filerc=.${name}rc
+    echo "installation de ${filerc} dans /home/${user}/ (si il n'est pas vide)"
+    if [[ ! -f /home/${user}/${filerc} ]] && grep -v "^[[:blank:]]*#" ./${filerc} >> /dev/null
+    then
+        cp -v ./${filerc} /home/${user}/
+    fi
+fi
+
+echo "Installation avec succès."
+exit 0

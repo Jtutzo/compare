@@ -1,0 +1,87 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+
+from tkinter import *
+from tkinter.filedialog import *
+from subprocess import check_output
+
+class Interface(Frame):
+  
+    def __init__(self, parent):
+        Frame.__init__(self, parent)   
+         
+        self.parent = parent
+        self.file1 = None
+        self.file2 = None
+        self.initUI()
+        
+    def initUI(self):
+     
+        # Fenêtre principale
+        self.parent.title("ICompare")
+        self.pack(fill=BOTH, expand=True)
+       
+        # Frame 1 : sélection File 1
+        self.frame1 = Frame(self)
+        self.frame1.pack(fill=X)
+        self.btn1 = Button(self.frame1, text="File 1", width=6, command=self.getFile1)
+        self.btn1.pack(side=LEFT, padx=5, pady=5)           
+        self.entry1 = Entry(self.frame1)
+        self.entry1.pack(fill=X, padx=5, expand=True)
+        
+        # Frame 2 : sélection File 2
+        self.frame2 = Frame(self)
+        self.frame2.pack(fill=X)
+        self.btn2 = Button(self.frame2, text="File 2", width=6, command=self.getFile2)
+        self.btn2.pack(side=LEFT, padx=5, pady=5)        
+        self.entry2 = Entry(self.frame2)
+        self.entry2.pack(fill=X, padx=5, expand=True)
+        
+        # Frame 3 : bouton Comparer
+        self.frame3 = Frame(self)
+        self.frame3.pack(fill=X)
+        self.btn3 = Button(self.frame3, text="Comparer", width=6, command=self.compareFiles)
+        self.btn3.pack(side=RIGHT, padx=5, pady=5)        
+
+        # Frame 4 : Affichage du résultat
+        self.frame4 = Frame(self)
+        self.frame4.pack(fill=BOTH, expand=True)
+        self.txt = Text(self.frame4)
+        self.txt.pack(fill=BOTH, pady=5, padx=5, expand=True)           
+             
+    # Récupération du File 1
+    def getFile1(self):
+        filename = askopenfilename(title="FILE",filetypes=[('all files','.*')])
+        if filename:
+            self.entry1.delete('0', END)
+            self.entry1.insert(INSERT, filename)
+            self.file1 = filename
+
+    # Récupération du File 2
+    def getFile2(self):
+        filename = askopenfilename(title="FILE",filetypes=[('all files','.*')])
+        if filename:
+            self.entry2.delete('0', END)
+            self.entry2.insert(INSERT, filename)
+            self.file2 = filename
+
+    # Compare les deux fichiers
+    def compareFiles(self):
+        if self.file1 and self.file2:
+            self.txt.delete('1.0', END)
+            out = check_output(["compare", self.file1, self.file2])
+            self.txt.insert(INSERT, out)
+        else:
+            self.txt.delete('1.0', END)
+            self.txt.insert(INSERT, "Paramêtre manquant")
+
+def main():
+  
+    root = Tk()
+    root.geometry("300x300+300+300")
+    app = Interface(root)
+    root.mainloop()  
+
+
+if __name__ == '__main__':
+    main()
