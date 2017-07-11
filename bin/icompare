@@ -51,7 +51,7 @@ class Interface(Frame):
              
     # Récupération du File 1
     def getFile1(self):
-        filename = askopenfilename(title="FILE",filetypes=[('all files','.*')])
+        filename = askopenfilename(title="FILE",filetypes=[('all files','.csv')], initialdir="/mnt/", initialfile=self.file1)
         if filename:
             self.entry1.delete('0', END)
             self.entry1.insert(INSERT, filename)
@@ -59,7 +59,7 @@ class Interface(Frame):
 
     # Récupération du File 2
     def getFile2(self):
-        filename = askopenfilename(title="FILE",filetypes=[('all files','.*')])
+        filename = askopenfilename(title="FILE",filetypes=[('all files','.csv')], initialdir="/mnt/", initialfile=self.file2)
         if filename:
             self.entry2.delete('0', END)
             self.entry2.insert(INSERT, filename)

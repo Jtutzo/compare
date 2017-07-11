@@ -35,17 +35,21 @@ then
 	echo "auteur : ${auteur}"
 
 else
+	echo "Start sort"
 	sort ${1} -o ${1}.tmp
 	sort ${2} -o ${2}.tmp
+	echo "End sort"
 	liste_doublon=(`comm -1 -2 ${1}.tmp ${2}.tmp`)
+	rm -rf ${1}.tmp ${2}.tmp
 	echo "valeur;line to `echo ${1} | awk -F/ '{print $NF}'` ;line to `echo ${2} | awk -F/ '{print $NF}'`"
 	for doublon in ${liste_doublon[@]}
 	do
-		echo -n "${doublon};"
+		value=`echo "${doublon}" | awk -F "," '{print $1}'`
+		echo -n "${value};"
 		result1=(`grep -n "${doublon}" ${1} | awk -F: '{print $1}'`)
 		result2=(`grep -n "${doublon}" ${2} | awk -F: '{print $1}'`)
 		echo -n "${result1[@]};"
 		echo "${result2[@]}"
 	done
-	rm -rf ${1}.tmp ${2}.tmp
+	echo "End command"
 fi
